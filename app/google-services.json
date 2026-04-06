@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "642249488761",
+    "project_id": "skill-cinema-auth",
+    "storage_bucket": "skill-cinema-auth.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:642249488761:android:03589a16b275a31bc917a8",
+        "android_client_info": {
+          "package_name": "kz.stierlitz.skillcinema"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRgN0zw9gWfM53d8OfBGpZL34lzPx9XWs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
