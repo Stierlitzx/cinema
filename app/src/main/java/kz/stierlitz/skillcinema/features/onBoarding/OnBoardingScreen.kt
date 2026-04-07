@@ -1,27 +1,44 @@
 package kz.stierlitz.skillcinema.features.onBoarding
 
+import android.R.attr.onClick
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import kz.stierlitz.skillcinema.R
+import kz.stierlitz.skillcinema.features.onBoarding.components.OnBoardingPager
+import kz.stierlitz.skillcinema.features.onBoarding.components.PagerIndicator
+import kz.stierlitz.skillcinema.ui.theme.SkillTheme
 
 @Composable
 fun OnBoardingScreen(
@@ -29,13 +46,76 @@ fun OnBoardingScreen(
     viewModel: OnBoardingViewModel
 ) {
     val state by viewModel.state.collectAsState()
+    val realPageCount = 3
+    val pagerState = rememberPagerState(pageCount = { realPageCount + 1 })
+    val scope = rememberCoroutineScope()
 
-    OnBoardingPage(
-        step = state.currentStep,
-        onNext = { viewModel.handleIntent(OnBoardingContract.Intent.OnNextClick) },
-        onSkip = { viewModel.handleIntent(OnBoardingContract.Intent.OnSkipClick) },
-        viewModel = viewModel
-    )
+    LaunchedEffect(pagerState.currentPage) {
+        if (pagerState.currentPage == realPageCount) {
+            onFinished()
+        }
+    }
+
+    LaunchedEffect(state.currentStep) {
+        if (pagerState.currentPage != state.currentStep) {
+            pagerState.animateScrollToPage(state.currentStep)
+        }
+    }
+
+    Scaffold { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier
+                    .padding(26.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo_title),
+                    contentDescription = "Skill cinema",
+                    modifier = Modifier
+                        .width(120.dp)
+                        .height(18.24152183532715.dp)
+                )
+                Text(
+                    text = "Пропустить",
+                    style = SkillTheme.typography.graphiksMedium,
+                    color = Color(0xFFB5B5C9),
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(shape = RoundedCornerShape(100), color = Color.Transparent)
+                        .padding(0.dp)
+                        .clickable(
+                            indication = null,
+                            interactionSource = null
+                        ) { onFinished() }
+                )
+            }
+
+            OnBoardingPager(
+                pagerState = pagerState,
+                modifier = Modifier.weight(1f),
+                onBoardingItems = listOf(
+                    R.drawable.onboarding1,
+                    R.drawable.onboarding2,
+                    R.drawable.onboarding3,
+                )
+            )
+
+            PagerIndicator(
+                currentPage = if (pagerState.currentPage < realPageCount) pagerState.currentPage else realPageCount - 1,
+                pageCount = realPageCount,
+                modifier = Modifier
+                    .weight(0.1f)
+                    .padding(start = 26.dp, end = 26.dp)
+            )
+        }
+    }
 
 //    Box(
 //        modifier = Modifier.fillMaxSize(),
@@ -53,41 +133,4 @@ fun OnBoardingScreen(
 //            }
 //        }
 //    }
-}
-
-@Composable
-fun OnBoardingPage(
-    step: Int,
-    onNext: () -> Unit,
-    onSkip: () -> Unit,
-    viewModel: OnBoardingViewModel
-) {
-    Scaffold(
-
-    ) { padding ->
-        Column(
-            modifier = Modifier.padding(padding)
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(26.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo_title),
-                    contentDescription = "Skill cinema",
-                )
-                TextButton(
-                    onClick = {},
-                    Modifier.background(Color.Red)
-                ) {
-                    Text(
-                        text = "Skip",
-                        color = Color.Black
-                    )
-                }
-            }
-        }
-    }
 }

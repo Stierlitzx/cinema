@@ -26,7 +26,7 @@ class OnBoardingViewModel : ViewModel() {
         if (currentState.currentStep < 2) {
             _state.update { it.copy(currentStep = currentState.currentStep + 1) }
         } else {
-            moveToLoader()
+            //moveToLoader()
         }
     }
 
