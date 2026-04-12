@@ -22,6 +22,15 @@ class RegistrationViewModel : ViewModel() {
 
     fun handleIntent(intent: RegistrationContract.Intent) {
         when (intent) {
+            is RegistrationContract.Intent.OnNameChange -> {
+                _state.update { it.copy(name = intent.name) }
+            }
+            is RegistrationContract.Intent.OnTogglePasswordVisibility -> {
+                _state.update { it.copy(isPasswordVisible = intent.isPasswordVisible) }
+            }
+            is RegistrationContract.Intent.OnToggleConfirmPasswordVisibility -> {
+                _state.update { it.copy(isConfirmPasswordVisible = intent.isConfirmPasswordVisible) }
+            }
             is RegistrationContract.Intent.OnEmailChange -> {
                 _state.update { it.copy(email = intent.email) }
             }
@@ -47,6 +56,8 @@ class RegistrationViewModel : ViewModel() {
             RegistrationContract.Intent.ResetError -> {
                 _state.update { it.copy(errorMessage = null) }
             }
+
+            else -> {}
         }
     }
 

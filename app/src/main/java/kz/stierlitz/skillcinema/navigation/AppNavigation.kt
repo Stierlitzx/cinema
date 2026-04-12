@@ -55,7 +55,7 @@ fun AppNavigation() {
         navController = navController,
         startDestination = Route.AuthGraph
     ) {
-        navigation<Route.AuthGraph>(startDestination = Screen.OnBoarding) {
+        navigation<Route.AuthGraph>(startDestination = Screen.Registration) { //Screen.OnBoarding) {
             composable<Screen.OnBoarding> {
                 val viewModel: OnBoardingViewModel = viewModel<OnBoardingViewModel>()
 
