@@ -28,6 +28,9 @@ class LoginViewModel : ViewModel() {
             is LoginContract.Intent.OnPasswordChange -> {
                 _state.update { it.copy(password = intent.password) }
             }
+            is LoginContract.Intent.OnTogglePasswordVisibility -> {
+                _state.update { it.copy(isPasswordVisible = intent.isPasswordVisible) }
+            }
             LoginContract.Intent.OnLoginWithEmailClick -> {
                 loginWithEmail()
             }
@@ -38,6 +41,8 @@ class LoginViewModel : ViewModel() {
                     viewModelScope.launch { _effect.send(LoginContract.SideEffect.ShowError(intent.errorMessage)) }
                 }
             }
+
+            else -> {}
         }
     }
 

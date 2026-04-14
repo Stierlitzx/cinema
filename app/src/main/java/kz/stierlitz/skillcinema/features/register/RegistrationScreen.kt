@@ -4,13 +4,17 @@ import android.R.attr.padding
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +32,7 @@ import kz.stierlitz.skillcinema.features.register.components.AuthTextField
 import kz.stierlitz.skillcinema.R
 import kz.stierlitz.skillcinema.features.register.components.AuthButton
 import kz.stierlitz.skillcinema.features.register.components.AuthTextField
+import kz.stierlitz.skillcinema.features.register.components.GoogleButton
 import kz.stierlitz.skillcinema.ui.theme.AppTypography
 import kz.stierlitz.skillcinema.ui.theme.SkillTheme
 
@@ -62,20 +67,6 @@ fun RegistrationScreen(
 
     Scaffold(
         containerColor = Color.White,
-        bottomBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 26.dp, vertical = 8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                AuthButton(
-                    text = "Зарегистрироваться",
-                    onClick = { onIntent(RegistrationContract.Intent.OnRegisterWithEmailClick) },
-                    enabled = !state.isLoading
-                )
-            }
-        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -161,6 +152,71 @@ fun RegistrationScreen(
                 isPasswordVisible = state.isConfirmPasswordVisible,
                 onPasswordVisibilityChange = { onIntent(RegistrationContract.Intent.OnToggleConfirmPasswordVisibility(it)) },
                 onValueChange = { onIntent(RegistrationContract.Intent.OnConfirmPasswordChange(it)) },
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            AuthButton(
+                text = "Зарегистрироваться",
+                onClick = { onIntent(RegistrationContract.Intent.OnRegisterWithEmailClick) },
+                enabled = !state.isLoading
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Уже есть аккаунт?",
+                    style = SkillTheme.typography.graphiksRegular,
+                    color = Color.Gray,
+                    fontSize = 16.sp,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = "Войти",
+                    style = SkillTheme.typography.graphiksRegular,
+                    color = Color(0xff3D3BFF),
+                    fontSize = 16.sp,
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        onNavigateToLogin()
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                HorizontalDivider(
+                    color = Color(0xFFeaf2e6),
+                    thickness = 1.dp,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "или",
+                    style = SkillTheme.typography.graphiksRegular,
+                    color = Color(0xFFbbbbbb),
+                    fontSize = 16.sp,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                HorizontalDivider(
+                    color = Color(0xFFeaf2e6),
+                    thickness = 1.dp,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+            GoogleButton(
+                onClick = onGoogleSignInClick,
             )
         }
     }

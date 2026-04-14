@@ -29,16 +29,12 @@ fun AuthButton(
         modifier = modifier
             .background(Color.White)
     ) {
-        HorizontalDivider(
-            thickness = 1.dp,
-            color = Color(0x82879626).copy(alpha = 0.15f)
-        )
         Button(
             onClick = onClick,
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 10.dp),
+                .fillMaxWidth(),
+                //.padding(vertical = 10.dp),
             colors = ButtonColors(
                 containerColor = Color(0xff3D3BFF),
                 contentColor = Color.White,
@@ -54,6 +50,5 @@ fun AuthButton(
                 fontSize = 16.sp,
             )
         }
-        Spacer(Modifier.height(10.dp))
     }
 }
