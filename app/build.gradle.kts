@@ -43,7 +43,7 @@ android {
 }
 
 dependencies {
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0")) // Убедитесь, что версия BOM актуальна
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
 
 //    implementation(platform(libs.firebase.bom))
@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.play.services.auth)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

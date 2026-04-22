@@ -29,5 +29,11 @@ sealed interface Screen {
     data object Login : Screen
 
     @Serializable
+    data object Search : Screen
+
+    @Serializable
+    data class Film(val id: Int) : Screen
+
+    @Serializable
     data object Profile : Screen
 }
