@@ -15,6 +15,7 @@ interface KinopoiskApi {
     suspend fun getFilmsByFilters(
         @Query("countries") countries: Int? = null,
         @Query("genres") genres: Int? = null,
+        @Query("keyword") keyword: String? = null,
         @Query("page") page: Int = 1
     ): FilmSearchResponse
 
@@ -34,4 +35,9 @@ interface KinopoiskApi {
         @Query("type") type: String = "STILL",
         @Query("page") page: Int = 1
     ): FilmImageResponse
+
+    @GET("api/v2.2/films/{id}/seasons")
+    suspend fun getSeasons(
+        @Path("id") id: Int
+    ): SeasonsResponse
 }

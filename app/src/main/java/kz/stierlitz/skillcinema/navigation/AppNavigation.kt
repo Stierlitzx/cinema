@@ -19,18 +19,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
-import kz.stierlitz.skillcinema.features.loader.LoaderScreen
-import kz.stierlitz.skillcinema.features.loader.LoaderViewModel
-import kz.stierlitz.skillcinema.features.onBoarding.OnBoardingScreen
-import kz.stierlitz.skillcinema.features.onBoarding.OnBoardingViewModel
-import kz.stierlitz.skillcinema.features.register.RegistrationScreen
-import kz.stierlitz.skillcinema.features.register.RegistrationViewModel
-import kz.stierlitz.skillcinema.features.register.RegistrationContract
-import kz.stierlitz.skillcinema.features.login.LoginScreen
-import kz.stierlitz.skillcinema.features.login.LoginViewModel
-import kz.stierlitz.skillcinema.features.login.LoginContract
-import kz.stierlitz.skillcinema.features.profile.ProfileScreen
-import kz.stierlitz.skillcinema.features.profile.ProfileViewModel
+import kz.stierlitz.skillcinema.presentation.loader.LoaderScreen
+import kz.stierlitz.skillcinema.presentation.loader.LoaderViewModel
+import kz.stierlitz.skillcinema.presentation.onBoarding.OnBoardingScreen
+import kz.stierlitz.skillcinema.presentation.onBoarding.OnBoardingViewModel
+import kz.stierlitz.skillcinema.presentation.register.RegistrationScreen
+import kz.stierlitz.skillcinema.presentation.register.RegistrationViewModel
+import kz.stierlitz.skillcinema.presentation.register.RegistrationContract
+import kz.stierlitz.skillcinema.presentation.login.LoginScreen
+import kz.stierlitz.skillcinema.presentation.login.LoginViewModel
+import kz.stierlitz.skillcinema.presentation.login.LoginContract
+import kz.stierlitz.skillcinema.presentation.profile.ProfileScreen
+import kz.stierlitz.skillcinema.presentation.profile.ProfileViewModel
 import kz.stierlitz.skillcinema.data.remote.auth.GoogleAuthUiClient
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Box
@@ -59,8 +59,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.toRoute
 import kz.stierlitz.skillcinema.R
-import kz.stierlitz.skillcinema.features.film.FilmScreen
-import kz.stierlitz.skillcinema.features.home.HomeScreen
+import kz.stierlitz.skillcinema.presentation.film.FilmScreen
+import kz.stierlitz.skillcinema.presentation.home.HomeScreen
 
 data class BottomNavItem(
     val route: Screen,
@@ -86,7 +86,20 @@ fun AppNavigation() {
                 it.route?.substringBefore("?") == Route.MainGraph::class.qualifiedName
             } == true
 
-            if (isMainGraphDestination) {
+            val hideBottomBarScreens = listOf(
+                Screen.Film::class.qualifiedName,
+                Screen.FilmList::class.qualifiedName,
+                Screen.Seasons::class.qualifiedName,
+                Screen.Filter::class.qualifiedName,
+                Screen.CountryFilter::class.qualifiedName,
+                Screen.GenreFilter::class.qualifiedName,
+                Screen.YearFilter::class.qualifiedName
+            )
+            val shouldHideBottomBar = currentDestination?.hierarchy?.any { dest ->
+                hideBottomBarScreens.contains(dest.route?.substringBefore("?"))
+            } == true
+
+            if (isMainGraphDestination && !shouldHideBottomBar) {
                 Surface(
                     modifier = Modifier
                         .height(78.dp)
@@ -302,14 +315,49 @@ fun AppNavigation() {
                     HomeScreen(
                         onNavigateToFilm = { filmId ->
                             navController.navigate(Screen.Film(filmId))
+                        },
+                        onNavigateToFilmList = { type, title ->
+                            navController.navigate(Screen.FilmList(type, title))
                         }
                     )
                 }
 
                 composable<Screen.Search> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "Search Screen")
-                    }
+                    kz.stierlitz.skillcinema.presentation.search.SearchScreen(
+                        onNavigateToFilm = { filmId ->
+                            navController.navigate(Screen.Film(filmId))
+                        },
+                        onNavigateToFilter = {
+                            navController.navigate(Screen.Filter)
+                        }
+                    )
+                }
+
+                composable<Screen.Filter> {
+                    kz.stierlitz.skillcinema.presentation.search.filter.FilterScreen(
+                        onBack = { navController.navigateUp() },
+                        onNavigateToCountry = { navController.navigate(Screen.CountryFilter) },
+                        onNavigateToGenre = { navController.navigate(Screen.GenreFilter) },
+                        onNavigateToYear = { navController.navigate(Screen.YearFilter) }
+                    )
+                }
+
+                composable<Screen.CountryFilter> {
+                    kz.stierlitz.skillcinema.presentation.search.filter.CountryFilterScreen(
+                        onBack = { navController.navigateUp() }
+                    )
+                }
+
+                composable<Screen.GenreFilter> {
+                    kz.stierlitz.skillcinema.presentation.search.filter.GenreFilterScreen(
+                        onBack = { navController.navigateUp() }
+                    )
+                }
+
+                composable<Screen.YearFilter> {
+                    kz.stierlitz.skillcinema.presentation.search.filter.YearFilterScreen(
+                        onBack = { navController.navigateUp() }
+                    )
                 }
 
                 composable<Screen.Profile> {
@@ -326,10 +374,22 @@ fun AppNavigation() {
                     ProfileScreen(
                         state = state,
                         onSignOut = {
-                            viewModel.handleIntent(kz.stierlitz.skillcinema.features.profile.ProfileContract.Intent.OnSignOutClick)
+                            viewModel.handleIntent(kz.stierlitz.skillcinema.presentation.profile.ProfileContract.Intent.OnSignOutClick)
                             navController.navigate(Route.AuthGraph) {
                                 popUpTo(Route.MainGraph) { inclusive = true }
                             }
+                        }
+                    )
+                }
+
+                composable<Screen.FilmList> { backStackEntry ->
+                    val args = backStackEntry.toRoute<Screen.FilmList>()
+                    kz.stierlitz.skillcinema.presentation.filmList.FilmListScreen(
+                        title = args.title,
+                        type = args.type,
+                        onBack = { navController.navigateUp() },
+                        onNavigateToFilm = { filmId ->
+                            navController.navigate(Screen.Film(filmId))
                         }
                     )
                 }
@@ -339,6 +399,18 @@ fun AppNavigation() {
 
                     FilmScreen(
                         filmId = args.id,
+                        onBack = { navController.navigateUp() },
+                        onNavigateToSeasons = { filmId, filmName ->
+                            navController.navigate(Screen.Seasons(filmId, filmName))
+                        }
+                    )
+                }
+
+                composable<Screen.Seasons> { backStackEntry ->
+                    val args = backStackEntry.toRoute<Screen.Seasons>()
+                    kz.stierlitz.skillcinema.presentation.seasons.SeasonsScreen(
+                        filmId = args.filmId,
+                        filmName = args.filmName,
                         onBack = { navController.navigateUp() }
                     )
                 }

@@ -95,3 +95,25 @@ data class FilmImageItem(
     val imageUrl: String,
     val previewUrl: String
 )
+
+@Serializable
+data class SeasonsResponse(
+    val total: Int = 0,
+    val items: List<SeasonItem> = emptyList()
+)
+
+@Serializable
+data class SeasonItem(
+    val number: Int,
+    val episodes: List<EpisodeItem> = emptyList()
+)
+
+@Serializable
+data class EpisodeItem(
+    val seasonNumber: Int,
+    val episodeNumber: Int,
+    val nameRu: String? = null,
+    val nameEn: String? = null,
+    val synopsis: String? = null,
+    val releaseDate: String? = null
+)

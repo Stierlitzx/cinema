@@ -12,3 +12,7 @@ val Pink40 = Color(0xFF7D5260)
 
 val StrongGray = Color(0xFF272727)
 val LightGray = Color(0xFFB5B5C9)
+
+val BlueAccent = Color(0xFF3D3BFF)
+val GrayText = Color(0xFF838390)
+val DividerColor = Color(0xFFF4F4F9)
