@@ -12,7 +12,7 @@ import retrofit2.Retrofit
 object NetworkModule {
 
     private const val BASE_URL = "https://kinopoiskapiunofficial.tech/"
-    private const val API_KEY = "5bd518f3-e3c9-4d55-990c-804bb6c1fdb0"
+    private const val API_KEY = "2e237281-ef26-4c9d-9a04-8fcf437013f4"
 
     private val json = Json {
         ignoreUnknownKeys = true

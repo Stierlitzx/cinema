@@ -32,9 +32,6 @@ import kz.stierlitz.skillcinema.presentation.login.LoginContract
 import kz.stierlitz.skillcinema.presentation.profile.ProfileScreen
 import kz.stierlitz.skillcinema.presentation.profile.ProfileViewModel
 import kz.stierlitz.skillcinema.data.remote.auth.GoogleAuthUiClient
-import androidx.compose.material3.Text
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -46,7 +43,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
@@ -56,11 +52,36 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import kz.stierlitz.skillcinema.R
 import kz.stierlitz.skillcinema.presentation.film.FilmScreen
 import kz.stierlitz.skillcinema.presentation.home.HomeScreen
+import kz.stierlitz.skillcinema.presentation.search.SearchScreen
+
+object Routes {
+    const val HOME = "some_home_route"
+    const val AUTH_GRAPH = "auth_graph"
+    const val MAIN_GRAPH = "main_graph"
+
+    const val ON_BOARDING = "on_boarding"
+    const val REGISTRATION = "registration"
+    const val LOGIN = "login"
+    const val LOADER = "loader"
+
+    const val PROFILE = "profile"
+
+    const val ROUTE_ACTOR = "actor/{actorId}"
+    const val ROUTE_FILMOGRAPHY = "filmography/{actorId}?actorName={actorName}"
+    const val ROUTE_GALLERY = "gallery/{filmId}"
+}
+
+fun actorRoute(actorId: Int) = "actor/$actorId"
+fun filmographyRoute(actorId: Int, actorName: String) =
+    "filmography/$actorId?actorName=${android.net.Uri.encode(actorName)}"
+fun galleryRoute(filmId: Int) = "gallery/$filmId"
 
 data class BottomNavItem(
     val route: Screen,
@@ -323,7 +344,7 @@ fun AppNavigation() {
                 }
 
                 composable<Screen.Search> {
-                    kz.stierlitz.skillcinema.presentation.search.SearchScreen(
+                    SearchScreen(
                         onNavigateToFilm = { filmId ->
                             navController.navigate(Screen.Film(filmId))
                         },
@@ -378,6 +399,13 @@ fun AppNavigation() {
                             navController.navigate(Route.AuthGraph) {
                                 popUpTo(Route.MainGraph) { inclusive = true }
                             }
+                        },
+                        onIntent = viewModel::handleIntent,
+                        onMovieClick = { filmId ->
+                            navController.navigate(Screen.Film(filmId))
+                        },
+                        onNavigateToFilmList = { type, title ->
+                            navController.navigate(Screen.FilmList(type, title))
                         }
                     )
                 }
@@ -402,6 +430,12 @@ fun AppNavigation() {
                         onBack = { navController.navigateUp() },
                         onNavigateToSeasons = { filmId, filmName ->
                             navController.navigate(Screen.Seasons(filmId, filmName))
+                        },
+                        onNavigateToActor = { actorId ->
+                            navController.navigate(actorRoute(actorId))
+                        },
+                        onNavigateToGallery = { filmId ->
+                            navController.navigate(galleryRoute(filmId))
                         }
                     )
                 }
@@ -412,6 +446,73 @@ fun AppNavigation() {
                         filmId = args.filmId,
                         filmName = args.filmName,
                         onBack = { navController.navigateUp() }
+                    )
+                }
+
+                composable(
+                    route = Routes.ROUTE_ACTOR,
+                    arguments = listOf(navArgument("actorId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val actorId = backStackEntry.arguments?.getInt("actorId") ?: return@composable
+                    kz.stierlitz.skillcinema.presentation.actor.ActorScreen(
+                        actorId = actorId,
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToFilmography = { id, name ->
+                            navController.navigate(filmographyRoute(id, name))
+                        },
+                        onNavigateToFilm = { filmId ->
+                            navController.navigate(Screen.Film(filmId))
+                        }
+                    )
+                }
+
+                composable(
+                    route = Routes.ROUTE_FILMOGRAPHY,
+                    arguments = listOf(
+                        navArgument("actorId") { type = NavType.IntType },
+                        navArgument("actorName") { type = NavType.StringType; defaultValue = "" }
+                    )
+                ) { backStackEntry ->
+                    val actorId = backStackEntry.arguments?.getInt("actorId") ?: return@composable
+                    val actorName = backStackEntry.arguments?.getString("actorName") ?: ""
+                    kz.stierlitz.skillcinema.presentation.filmography.FilmographyPage(
+                        actorId = actorId,
+                        actorName = android.net.Uri.decode(actorName),
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToFilm = { filmId ->
+                            navController.navigate(Screen.Film(filmId))
+                        }
+                    )
+                }
+
+                composable(
+                    route = Routes.ROUTE_GALLERY,
+                    arguments = listOf(
+                        navArgument("filmId") { type = NavType.IntType }
+                    )
+                ) { backStackEntry ->
+                    val filmId = backStackEntry.arguments?.getInt("filmId") ?: return@composable
+                    kz.stierlitz.skillcinema.presentation.gallery.GalleryPage(
+                        filmId = filmId,
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+
+                composable("film/{filmId}") { backStackEntry ->
+                    val args = backStackEntry.toRoute<Screen.Film>()
+
+                    FilmScreen(
+                        filmId = args.id,
+                        onBack = { navController.navigateUp() },
+                        onNavigateToSeasons = { filmId, filmName ->
+                            navController.navigate(Screen.Seasons(filmId, filmName))
+                        },
+                        onNavigateToActor = { actorId ->
+                            navController.navigate(actorRoute(actorId))
+                        },
+                        onNavigateToGallery = { filmId ->
+                            navController.navigate(galleryRoute(filmId))
+                        }
                     )
                 }
             }

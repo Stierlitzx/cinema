@@ -16,6 +16,10 @@ interface KinopoiskApi {
         @Query("countries") countries: Int? = null,
         @Query("genres") genres: Int? = null,
         @Query("keyword") keyword: String? = null,
+        @Query("ratingFrom") ratingFrom: Float? = null,
+        @Query("ratingTo") ratingTo: Float? = null,
+        @Query("yearFrom") yearFrom: Int? = null,
+        @Query("yearTo") yearTo: Int? = null,
         @Query("page") page: Int = 1
     ): FilmSearchResponse
 
@@ -28,6 +32,11 @@ interface KinopoiskApi {
     suspend fun getStaff(
         @Query("filmId") filmId: Int
     ): List<StaffResponse>
+
+    @GET("api/v1/staff/{id}")
+    suspend fun getActorDetail(
+        @Path("id") actorId: Int
+    ): kz.stierlitz.skillcinema.data.remote.dto.ActorDetailResponse
 
     @GET("api/v2.2/films/{id}/images")
     suspend fun getFilmImages(

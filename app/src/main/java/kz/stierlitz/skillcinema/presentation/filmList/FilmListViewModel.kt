@@ -10,12 +10,16 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kz.stierlitz.skillcinema.SkillCinemaApp
 import kz.stierlitz.skillcinema.core.network.NetworkModule
 import kz.stierlitz.skillcinema.data.repository.MovieRepositoryImpl
 import kz.stierlitz.skillcinema.domain.repository.MovieRepository
 
 class FilmListViewModel : ViewModel() {
     private val repository: MovieRepository = MovieRepositoryImpl(NetworkModule.kinopoiskApi)
+    private val watchedMovieDao = SkillCinemaApp.instance.database.watchedMovieDao
+    private val collectionDao = SkillCinemaApp.instance.database.collectionDao
+    private val collectionMovieDao = SkillCinemaApp.instance.database.collectionMovieDao
 
     private val _state = MutableStateFlow(FilmListContract.State())
     val state: StateFlow<FilmListContract.State> = _state.asStateFlow()
@@ -33,6 +37,58 @@ class FilmListViewModel : ViewModel() {
         _state.update { it.copy(isLoading = true, listType = type, title = title, error = null) }
         viewModelScope.launch {
             try {
+                if (type == "watched") {
+                    watchedMovieDao.getWatchedMovies().collect { list ->
+                        val movies = list.map {
+                            kz.stierlitz.skillcinema.domain.model.Movie(
+                                kinopoiskId = it.filmId,
+                                nameRu = it.nameRu,
+                                nameEn = it.nameEn,
+                                posterUrl = it.posterUrl ?: "",
+                                posterUrlPreview = it.posterUrlPreview ?: "",
+                                ratingKinopoisk = it.ratingKinopoisk,
+                                ratingImdb = it.ratingImdb,
+                                year = it.year ?: 0,
+                                reviewsCount = 0,
+                                genres = emptyList(),
+                                webUrl = "",
+                                isTicketsAvailable = false,
+                                type = "FILM",
+                                lastSync = ""
+                            )
+                        }
+                        _state.update { state -> state.copy(isLoading = false, movies = movies) }
+                    }
+                    return@launch
+                }
+
+                // Check if type is a collection name
+                val collection = collectionDao.getCollectionByName(type)
+                if (collection != null) {
+                    collectionMovieDao.getMoviesInCollection(collection.id).collect { movieEntities ->
+                        val movies = movieEntities.map {
+                            kz.stierlitz.skillcinema.domain.model.Movie(
+                                kinopoiskId = it.filmId,
+                                nameRu = it.nameRu,
+                                nameEn = it.nameEn,
+                                posterUrl = it.posterUrl ?: "",
+                                posterUrlPreview = it.posterUrlPreview ?: "",
+                                ratingKinopoisk = it.ratingKinopoisk,
+                                ratingImdb = it.ratingImdb,
+                                year = it.year ?: 0,
+                                reviewsCount = 0,
+                                genres = emptyList(),
+                                webUrl = "",
+                                isTicketsAvailable = false,
+                                type = "FILM",
+                                lastSync = ""
+                            )
+                        }
+                        _state.update { state -> state.copy(isLoading = false, movies = movies) }
+                    }
+                    return@launch
+                }
+
                 val movies = when (type) {
                     "CLOSES_RELEASES", "TOP_POPULAR_ALL", "TOP_250_MOVIES", "POPULAR_SERIES" -> {
                         repository.getCollections(type = type)

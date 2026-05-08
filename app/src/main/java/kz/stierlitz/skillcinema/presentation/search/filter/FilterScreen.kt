@@ -21,6 +21,8 @@ import kz.stierlitz.skillcinema.ui.theme.BlueAccent
 import kz.stierlitz.skillcinema.ui.theme.DividerColor
 import kz.stierlitz.skillcinema.ui.theme.GrayText
 import kz.stierlitz.skillcinema.ui.theme.SkillTheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -31,6 +33,17 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.ui.text.style.TextOverflow
+
+object FilterSharedState {
+    var selectedCountries = mutableStateOf(setOf<String>())
+    var selectedGenres = mutableStateOf(setOf<String>())
+    var ratingRange = mutableStateOf(1f..10f)
+    var yearFrom = mutableStateOf<Int?>(null)
+    var yearTo = mutableStateOf<Int?>(null)
+    var selectedTypeIndex = mutableIntStateOf(0)
+    var selectedSortIndex = mutableIntStateOf(0)
+}
 
 @Composable
 fun SegmentedControl(
@@ -93,9 +106,11 @@ fun FilterScreen(
         containerColor = Color.White
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
-            var selectedTypeIndex by remember { mutableIntStateOf(0) }
-            var selectedSortIndex by remember { mutableIntStateOf(0) }
-            var ratingRange by remember { mutableStateOf(1f..10f) }
+            var selectedTypeIndex by FilterSharedState.selectedTypeIndex
+            var selectedSortIndex by FilterSharedState.selectedSortIndex
+            var ratingRange by FilterSharedState.ratingRange
+            val selectedCountries by FilterSharedState.selectedCountries
+            val selectedGenres by FilterSharedState.selectedGenres
 
             Column(modifier = Modifier.padding(horizontal = 26.dp)) {
                 Spacer(modifier = Modifier.height(24.dp))
@@ -114,21 +129,43 @@ fun FilterScreen(
 
             Row(modifier = Modifier.fillMaxWidth().clickable { onNavigateToCountry() }.padding(horizontal = 26.dp, vertical = 16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Страна", fontSize = 14.sp)
-                Text("Россия", fontSize = 14.sp, color = GrayText)
+                Text(
+                    text = if (selectedCountries.isEmpty()) "Любая страна" else selectedCountries.joinToString(", "),
+                    fontSize = 14.sp,
+                    color = GrayText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false).padding(start = 16.dp),
+                    textAlign = TextAlign.End
+                )
             }
             
             HorizontalDivider(color = DividerColor)
 
             Row(modifier = Modifier.fillMaxWidth().clickable { onNavigateToGenre() }.padding(horizontal = 26.dp, vertical = 16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Жанр", fontSize = 14.sp)
-                Text("Комедия", fontSize = 14.sp, color = GrayText)
+                Text(
+                    text = if (selectedGenres.isEmpty()) "Любой жанр" else selectedGenres.joinToString(", "),
+                    fontSize = 14.sp,
+                    color = GrayText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false).padding(start = 16.dp),
+                    textAlign = TextAlign.End
+                )
             }
             
             HorizontalDivider(color = DividerColor)
 
             Row(modifier = Modifier.fillMaxWidth().clickable { onNavigateToYear() }.padding(horizontal = 26.dp, vertical = 16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Год", fontSize = 14.sp)
-                Text("с 1998 до 2017", fontSize = 14.sp, color = GrayText)
+                val from = FilterSharedState.yearFrom.value
+                val to = FilterSharedState.yearTo.value
+                val periodText = if (from == null && to == null) "любой"
+                else if (from != null && to == null) "с $from"
+                else if (from == null && to != null) "до $to"
+                else "с $from до $to"
+                Text(periodText, fontSize = 14.sp, color = GrayText)
             }
             
             HorizontalDivider(color = DividerColor)
@@ -199,8 +236,8 @@ fun FilterScreen(
 @Composable
 fun CountryFilterScreen(onBack: () -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedCountries by remember { mutableStateOf(setOf<String>()) }
-    
+    var selectedCountries by FilterSharedState.selectedCountries
+
     val countries = listOf("Россия", "Великобритания", "Германия", "США", "Франция", "Италия", "Испания", "Канада", "Япония", "Южная Корея", "Австралия", "Китай")
     val filteredCountries = if (searchQuery.isEmpty()) {
         listOf("Любая страна") + countries
@@ -289,8 +326,8 @@ fun CountryFilterScreen(onBack: () -> Unit) {
 @Composable
 fun GenreFilterScreen(onBack: () -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
-    var selectedGenres by remember { mutableStateOf(setOf<String>()) }
-    
+    var selectedGenres by FilterSharedState.selectedGenres
+
     val genres = listOf("Комедия", "Мелодрама", "Боевик", "Вестерн", "Драма", "Триллер", "Криминал", "Детектив", "Фантастика", "Приключения", "Биография", "Анимация", "Фэнтези", "История")
     val filteredGenres = if (searchQuery.isEmpty()) {
         listOf("Любой жанр") + genres
@@ -375,9 +412,84 @@ fun GenreFilterScreen(onBack: () -> Unit) {
     }
 }
 
+@Composable
+fun YearPickerControl(
+    title: String,
+    selectedYear: Int?,
+    onYearSelected: (Int) -> Unit
+) {
+    var baseYear by remember { mutableIntStateOf(selectedYear?.let { it - ((it - 1998) % 12) } ?: 1998) }
+
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+        Text(title, fontSize = 14.sp, color = GrayText, modifier = Modifier.padding(bottom = 8.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+                .padding(16.dp)
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "$baseYear - ${baseYear + 11}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = BlueAccent
+                    )
+                    Row {
+                        IconButton(onClick = { baseYear -= 12 }, modifier = Modifier.size(32.dp)) {
+                            // You can replace the text with painterResource if you have icons
+                            Text("<", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        }
+                        IconButton(onClick = { baseYear += 12 }, modifier = Modifier.size(32.dp)) {
+                            Text(">", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                val years = (baseYear..baseYear + 11).toList()
+                val chunkedYears = years.chunked(3)
+
+                chunkedYears.forEach { rowYears ->
+                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                        rowYears.forEach { year ->
+                            val isSelected = year == selectedYear
+                            Text(
+                                text = year.toString(),
+                                fontSize = 16.sp,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) BlueAccent else Color.Black,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { onYearSelected(year) }
+                                    .padding(vertical = 4.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        // Handle incomplete rows if any
+                        repeat(3 - rowYears.size) {
+                            Spacer(Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun YearFilterScreen(onBack: () -> Unit) {
+    var yearFrom by remember { mutableStateOf(FilterSharedState.yearFrom.value) }
+    var yearTo by remember { mutableStateOf(FilterSharedState.yearTo.value) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -392,8 +504,38 @@ fun YearFilterScreen(onBack: () -> Unit) {
         },
         containerColor = Color.White
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues).padding(horizontal = 26.dp)) {
-            Text("Года", modifier = Modifier.padding(vertical = 16.dp))
+        Column(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+            androidx.compose.foundation.rememberScrollState().let { scrollState ->
+                Column(modifier = Modifier.weight(1f).verticalScroll(scrollState).padding(horizontal = 26.dp)) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    YearPickerControl(
+                        title = "Искать в период с",
+                        selectedYear = yearFrom,
+                        onYearSelected = { yearFrom = it }
+                    )
+                    YearPickerControl(
+                        title = "Искать в период до",
+                        selectedYear = yearTo,
+                        onYearSelected = { yearTo = it }
+                    )
+                }
+            }
+
+            Button(
+                onClick = {
+                    FilterSharedState.yearFrom.value = yearFrom
+                    FilterSharedState.yearTo.value = yearTo
+                    onBack()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(26.dp)
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = BlueAccent),
+                shape = RoundedCornerShape(25.dp)
+            ) {
+                Text("Выбрать", fontSize = 16.sp, color = Color.White)
+            }
         }
     }
 }

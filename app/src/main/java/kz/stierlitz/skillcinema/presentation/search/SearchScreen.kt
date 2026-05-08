@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import kz.stierlitz.skillcinema.R
 import kz.stierlitz.skillcinema.domain.model.Movie
+import kz.stierlitz.skillcinema.presentation.search.filter.FilterSharedState
 import kz.stierlitz.skillcinema.ui.theme.SkillTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +48,17 @@ fun SearchScreen(
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    LaunchedEffect(
+        FilterSharedState.selectedCountries.value,
+        FilterSharedState.selectedGenres.value,
+        FilterSharedState.ratingRange.value
+    ) {
+        val q = viewModel.state.value.query
+        if (q.isNotBlank()) {
+            viewModel.handleIntent(SearchContract.Intent.SearchTextChange(q))
         }
     }
 

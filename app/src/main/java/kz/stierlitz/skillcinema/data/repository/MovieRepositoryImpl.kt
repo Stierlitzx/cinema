@@ -30,8 +30,24 @@ class MovieRepositoryImpl(
         }
     }
 
-    override suspend fun getFilmsByFilters(countries: Int?, genres: Int?, keyword: String?): List<Movie> {
-        val response = api.getFilmsByFilters(countries = countries, genres = genres, keyword = keyword)
+    override suspend fun getFilmsByFilters(
+        countries: Int?,
+        genres: Int?,
+        keyword: String?,
+        ratingFrom: Float?,
+        ratingTo: Float?,
+        yearFrom: Int?,
+        yearTo: Int?
+    ): List<Movie> {
+        val response = api.getFilmsByFilters(
+            countries = countries,
+            genres = genres,
+            keyword = keyword,
+            ratingFrom = ratingFrom,
+            ratingTo = ratingTo,
+            yearFrom = yearFrom,
+            yearTo = yearTo
+        )
         return response.items.map { item ->
             Movie(
                 kinopoiskId = item.kinopoiskId,
@@ -98,8 +114,8 @@ class MovieRepositoryImpl(
         }
     }
 
-    override suspend fun getFilmImages(id: Int): List<FilmImage> {
-        val response = api.getFilmImages(id)
+    override suspend fun getFilmImages(id: Int, type: String, page: Int): List<FilmImage> {
+        val response = api.getFilmImages(id, type, page)
         return response.items.map { i ->
             FilmImage(
                 imageUrl = i.imageUrl,

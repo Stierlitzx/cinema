@@ -1,6 +1,7 @@
 package kz.stierlitz.skillcinema.presentation.film.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,7 +27,7 @@ import kz.stierlitz.skillcinema.domain.model.Staff
 import kz.stierlitz.skillcinema.ui.theme.SkillTheme
 
 @Composable
-fun StaffListRow(staffList: List<Staff>) {
+fun StaffListRow(staffList: List<Staff>, onStaffClick: (Int) -> Unit = {}) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxWidth()
@@ -36,7 +37,9 @@ fun StaffListRow(staffList: List<Staff>) {
                 columnStaff.forEach { staff ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.width(200.dp)
+                        modifier = Modifier
+                            .width(200.dp)
+                            .clickable { onStaffClick(staff.staffId) }
                     ) {
                         AsyncImage(
                             model = staff.posterUrl,

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -67,7 +68,7 @@ fun MovieListRow(title: String, listType: String, movies: List<Movie>, onMovieCl
                 item {
                     Column(
                         modifier = Modifier
-                            .height(250.dp)
+                            .height(200.dp)
                             .padding(end = 16.dp)
                             .clickable {
                                 onSeeAllClick(listType, title)

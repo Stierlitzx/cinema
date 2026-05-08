@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kz.stierlitz.skillcinema.core.network.NetworkModule
 import kz.stierlitz.skillcinema.data.repository.MovieRepositoryImpl
 import kz.stierlitz.skillcinema.domain.repository.MovieRepository
+import kz.stierlitz.skillcinema.presentation.search.filter.FilterSharedState
 
 class SearchViewModel : ViewModel() {
     private val repository: MovieRepository = MovieRepositoryImpl(NetworkModule.kinopoiskApi)
@@ -47,7 +48,18 @@ class SearchViewModel : ViewModel() {
             delay(500)
             _state.update { it.copy(isLoading = true, error = null) }
             try {
-                val results = repository.getFilmsByFilters(keyword = query)
+                val countryId  = resolveCountryId(FilterSharedState.selectedCountries.value)
+                val genreId    = resolveGenreId(FilterSharedState.selectedGenres.value)
+                val ratingRange = FilterSharedState.ratingRange.value
+                val results = repository.getFilmsByFilters(
+                    countries = countryId,
+                    genres    = genreId,
+                    keyword   = query,
+                    ratingFrom = ratingRange.start,
+                    ratingTo = ratingRange.endInclusive,
+                    yearFrom = FilterSharedState.yearFrom.value,
+                    yearTo = FilterSharedState.yearTo.value
+                )
                 _state.update { it.copy(isLoading = false, results = results) }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = e.message) }
@@ -55,5 +67,42 @@ class SearchViewModel : ViewModel() {
             }
         }
     }
-}
 
+    private val countryNameToId = mapOf(
+        "Россия" to 34,
+        "США" to 1,
+        "Великобритания" to 68,
+        "Германия" to 7,
+        "Франция" to 5,
+        "Италия" to 9,
+        "Испания" to 26,
+        "Канада" to 3,
+        "Япония" to 36,
+        "Южная Корея" to 46,
+        "Австралия" to 16,
+        "Китай" to 13
+    )
+
+    private val genreNameToId = mapOf(
+        "Комедия" to 13,
+        "Мелодрама" to 1,
+        "Боевик" to 3,
+        "Вестерн" to 11,
+        "Драма" to 2,
+        "Триллер" to 4,
+        "Криминал" to 6,
+        "Детектив" to 17,
+        "Фантастика" to 5,
+        "Приключения" to 9,
+        "Биография" to 18,
+        "Анимация" to 15,
+        "Фэнтези" to 7,
+        "История" to 19
+    )
+
+    private fun resolveCountryId(names: Set<String>): Int? =
+        names.firstOrNull()?.let { countryNameToId[it] }
+
+    private fun resolveGenreId(names: Set<String>): Int? =
+        names.firstOrNull()?.let { genreNameToId[it] }
+}
