@@ -33,10 +33,6 @@ import coil.compose.AsyncImage
 import kz.stierlitz.skillcinema.R
 import kz.stierlitz.skillcinema.presentation.home.components.MovieCard
 
-// Размеры совпадают с MovieCard: width=140dp, aspectRatio=2/3
-private val CARD_WIDTH = 140.dp
-private val CARD_ASPECT = 2f / 3f
-
 @Composable
 fun ProfileScreen(
     state: ProfileContract.State,
@@ -114,7 +110,6 @@ fun ProfileScreen(
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Аккаунт — слева, компактно
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -122,9 +117,10 @@ fun ProfileScreen(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (state.profilePictureUrl != null) {
+            val profilePictureUrl = state.profilePictureUrl?.takeIf { it.isNotBlank() }
+            if (profilePictureUrl != null) {
                 AsyncImage(
-                    model = state.profilePictureUrl,
+                    model = profilePictureUrl,
                     contentDescription = "Profile picture",
                     modifier = Modifier
                         .size(64.dp)
@@ -199,18 +195,17 @@ fun ProfileScreen(
             ) {
                 items(state.watchedMovies) { movie ->
                     MovieCard(
-                        modifier = Modifier.width(CARD_WIDTH),
+                        modifier = Modifier.width(140.dp),
                         movie = movie,
                         onClick = { onMovieClick(movie.kinopoiskId) }
                     )
                 }
                 item {
-                    // Точно такой же размер как постер MovieCard (width=140, aspectRatio=2/3)
-                    Column(modifier = Modifier.width(CARD_WIDTH)) {
+                    Column(modifier = Modifier.width(140.dp)) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .aspectRatio(CARD_ASPECT)
+                                .aspectRatio(2f / 3f)
                                 .clip(RoundedCornerShape(8.dp))
                                 .clickable { onIntent(ProfileContract.Intent.ClearHistory) },
                             contentAlignment = Alignment.Center
@@ -242,7 +237,6 @@ fun ProfileScreen(
                                 )
                             }
                         }
-                        // Резервируем место под текст названия и жанра — как у MovieCard
                         Spacer(modifier = Modifier.height(36.dp))
                     }
                 }
@@ -272,7 +266,6 @@ fun ProfileScreen(
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // BoxWithConstraints — единственный способ сделать квадраты в Row через weight
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()

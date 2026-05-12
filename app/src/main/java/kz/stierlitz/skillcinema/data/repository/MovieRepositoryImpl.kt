@@ -142,4 +142,40 @@ class MovieRepositoryImpl(
             )
         }
     }
+
+    override suspend fun searchPersonsByName(name: String): List<Person> {
+        val response = api.searchPersonsByName(name)
+        return response.items.map { item ->
+            Person(
+                kinopoiskId = item.kinopoiskId,
+                nameRu = item.nameRu,
+                nameEn = item.nameEn,
+                posterUrl = item.posterUrl ?: "",
+                sex = item.sex
+            )
+        }
+    }
+
+    override suspend fun getSimilarFilms(id: Int): List<Movie> {
+        val response = api.getSimilarFilms(id)
+        return response.items.map { item ->
+            Movie(
+                kinopoiskId = item.filmId,
+                nameRu = item.nameRu,
+                nameEn = item.nameEn,
+                nameOriginal = item.nameOriginal,
+                posterUrl = item.posterUrl ?: "",
+                posterUrlPreview = item.posterUrlPreview ?: "",
+                ratingKinopoisk = item.ratingKinopoisk,
+                ratingImdb = item.ratingImdb,
+                year = item.year ?: 0,
+                genres = item.genres.map { Genre(it.genre ?: "") },
+                reviewsCount = 0,
+                webUrl = "",
+                isTicketsAvailable = false,
+                type = "FILM",
+                lastSync = ""
+            )
+        }
+    }
 }

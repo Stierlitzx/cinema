@@ -117,3 +117,40 @@ data class EpisodeItem(
     val synopsis: String? = null,
     val releaseDate: String? = null
 )
+
+@Serializable
+data class PersonByNameResponse(
+    val total: Int = 0,
+    val items: List<PersonByNameItem> = emptyList()
+)
+
+@Serializable
+data class PersonByNameItem(
+    val kinopoiskId: Int,
+    val webUrl: String? = null,
+    val nameRu: String? = null,
+    val nameEn: String? = null,
+    val sex: String? = null,
+    val posterUrl: String? = null
+)
+
+@Serializable
+data class SimilarFilmsResponse(
+    val total: Int = 0,
+    val items: List<SimilarFilmItem> = emptyList()
+)
+
+@Serializable
+data class SimilarFilmItem(
+    val filmId: Int,
+    val nameRu: String? = null,
+    val nameEn: String? = null,
+    val nameOriginal: String? = null,
+    val posterUrl: String? = null,
+    val posterUrlPreview: String? = null,
+    val ratingKinopoisk: Double? = null,
+    val ratingImdb: Double? = null,
+    val year: Int? = null,
+    val genres: List<Genre> = emptyList()
+)
+

@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import kz.stierlitz.skillcinema.R
 import kz.stierlitz.skillcinema.domain.model.Movie
+import kz.stierlitz.skillcinema.domain.model.Person
 import kz.stierlitz.skillcinema.presentation.search.filter.FilterSharedState
 import kz.stierlitz.skillcinema.ui.theme.SkillTheme
 
@@ -36,6 +37,7 @@ import kz.stierlitz.skillcinema.ui.theme.SkillTheme
 fun SearchScreen(
     viewModel: SearchViewModel = viewModel(),
     onNavigateToFilm: (Int) -> Unit = {},
+    onNavigateToActor: (Int) -> Unit = {},
     onNavigateToFilter: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -82,7 +84,7 @@ fun SearchScreen(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-        } else if (state.query.isNotBlank() && state.results.isEmpty()) {
+        } else if (state.query.isNotBlank() && state.movieResults.isEmpty() && state.personResults.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     text = "К сожалению, по вашему запросу ничего не найдено",
@@ -96,8 +98,40 @@ fun SearchScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(bottom = 100.dp)
             ) {
-                items(state.results) { movie ->
-                    SearchResultItem(movie = movie, onClick = { onNavigateToFilm(movie.kinopoiskId) })
+                if (state.movieResults.isNotEmpty()) {
+                    item(key = "movies_header", contentType = "header") {
+                        Text(
+                            text = "Фильмы",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                        )
+                    }
+                    items(
+                        items = state.movieResults,
+                        key = { movie -> "movie_${movie.kinopoiskId}" },
+                        contentType = { "movie" }
+                    ) { movie ->
+                        SearchResultItem(movie = movie, onClick = { onNavigateToFilm(movie.kinopoiskId) })
+                    }
+                }
+
+                if (state.personResults.isNotEmpty()) {
+                    item(key = "persons_header", contentType = "header") {
+                        Text(
+                            text = "Люди",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black,
+                        )
+                    }
+                    items(
+                        items = state.personResults,
+                        key = { person -> "person_${person.kinopoiskId}" },
+                        contentType = { "person" }
+                    ) { person ->
+                        SearchPersonItem(person = person, onClick = { onNavigateToActor(person.kinopoiskId) })
+                    }
                 }
             }
         }
@@ -163,7 +197,7 @@ fun SearchResultItem(movie: Movie, onClick: () -> Unit) {
                 model = movie.posterUrlPreview.takeIf { it.isNotEmpty() } ?: movie.posterUrl,
                 contentDescription = movie.nameRu ?: movie.nameEn,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
             val rating = movie.ratingKinopoisk ?: movie.ratingImdb
             if (rating != null) {
@@ -211,6 +245,60 @@ fun SearchResultItem(movie: Movie, onClick: () -> Unit) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+        }
+    }
+}
+
+@Composable
+fun SearchPersonItem(person: Person, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+    ) {
+        Box(
+            modifier = Modifier
+                .width(110.dp)
+                .height(160.dp)
+                .clip(RoundedCornerShape(8.dp))
+        ) {
+            AsyncImage(
+                model = person.posterUrl,
+                contentDescription = person.nameRu ?: person.nameEn,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(
+            modifier = Modifier.align(Alignment.CenterVertically)
+        ) {
+            Text(
+                text = person.nameRu ?: person.nameEn ?: "Без названия",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            val alternativeName = if (person.nameRu != null && person.nameEn != null) {
+                person.nameEn
+            } else {
+                null
+            }
+
+            if (alternativeName != null) {
+                Text(
+                    text = alternativeName,
+                    fontSize = 12.sp,
+                    color = Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }

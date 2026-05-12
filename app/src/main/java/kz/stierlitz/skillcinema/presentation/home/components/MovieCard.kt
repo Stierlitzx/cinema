@@ -41,12 +41,23 @@ fun MovieCard(modifier: Modifier = Modifier.width(140.dp), movie: Movie, onClick
                 .aspectRatio(2f / 3f)
                 .clip(RoundedCornerShape(8.dp))
         ) {
-            AsyncImage(
-                model = movie.posterUrlPreview.takeIf { it.isNotEmpty() } ?: movie.posterUrl,
-                contentDescription = movie.nameRu ?: movie.nameEn,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
+            val posterModel = movie.posterUrlPreview.takeIf { it.isNotBlank() }
+                ?: movie.posterUrl.takeIf { it.isNotBlank() }
+
+            if (posterModel != null) {
+                AsyncImage(
+                    model = posterModel,
+                    contentDescription = movie.nameRu ?: movie.nameEn,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFFEAEAF2))
+                )
+            }
 
             val rating = movie.ratingKinopoisk ?: movie.ratingImdb
             if (rating != null) {

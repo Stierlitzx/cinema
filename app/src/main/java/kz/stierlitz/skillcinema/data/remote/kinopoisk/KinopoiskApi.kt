@@ -49,4 +49,15 @@ interface KinopoiskApi {
     suspend fun getSeasons(
         @Path("id") id: Int
     ): SeasonsResponse
+
+    @GET("api/v1/persons")
+    suspend fun searchPersonsByName(
+        @Query("name") name: String,
+        @Query("page") page: Int = 1
+    ): PersonByNameResponse
+
+    @GET("api/v2.2/films/{id}/similars")
+    suspend fun getSimilarFilms(
+        @Path("id") id: Int
+    ): SimilarFilmsResponse
 }

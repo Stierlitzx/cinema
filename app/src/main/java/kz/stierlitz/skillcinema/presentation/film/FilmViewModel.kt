@@ -50,12 +50,12 @@ class FilmViewModel : ViewModel() {
             }
             collectionDao.getAllCollections().collectLatest { collections ->
                 _state.update { it.copy(collections = collections) }
-
+                
                 // Create flows for each collection's count
                 val countFlows = collections.associate { collection ->
                     collection.id to SkillCinemaApp.instance.database.collectionMovieDao.getMovieCountInCollection(collection.id)
                 }
-
+                
                 // Combine all count flows
                 if (countFlows.isNotEmpty()) {
                     val flows = countFlows.values.toList()
@@ -128,7 +128,14 @@ class FilmViewModel : ViewModel() {
                     val staffDeferred = async { repository.getStaff(id) }
                     val imagesDeferred = async { repository.getFilmImages(id) }
                     val seasonsDeferred = async { repository.getSeasons(id) }
-                    
+                    val similarsDeferred = async {
+                        try {
+                            repository.getSimilarFilms(id)
+                        } catch (e: Exception) {
+                            emptyList()
+                        }
+                    }
+
                     val seasons = try {
                         seasonsDeferred.await()
                     } catch (e: Exception) {
@@ -138,6 +145,7 @@ class FilmViewModel : ViewModel() {
                     val film = filmDeferred.await()
                     val staff = staffDeferred.await()
                     val images = imagesDeferred.await()
+                    val similars = similarsDeferred.await()
 
                     val actors = staff.filter { it.professionKey == "ACTOR" }
                     val workers = staff.filter { it.professionKey != "ACTOR" }
@@ -162,7 +170,8 @@ class FilmViewModel : ViewModel() {
                             actors = actors,
                             workers = workers,
                             gallery = gallery,
-                            seasons = seasons
+                            seasons = seasons,
+                            similars = similars
                         )
                     }
                 }

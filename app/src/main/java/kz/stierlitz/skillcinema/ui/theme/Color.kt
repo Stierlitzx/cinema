@@ -15,4 +15,4 @@ val LightGray = Color(0xFFB5B5C9)
 
 val BlueAccent = Color(0xFF3D3BFF)
 val GrayText = Color(0xFF838390)
-val DividerColor = Color(0xFFF4F4F9)
+val DividerColor = Color(0xFFB5B5C9).copy(alpha = 0.4f)

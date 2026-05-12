@@ -3,6 +3,7 @@ package kz.stierlitz.skillcinema.presentation.film.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,16 +42,27 @@ fun StaffListRow(staffList: List<Staff>, onStaffClick: (Int) -> Unit = {}) {
                             .width(200.dp)
                             .clickable { onStaffClick(staff.staffId) }
                     ) {
-                        AsyncImage(
-                            model = staff.posterUrl,
-                            contentDescription = staff.nameRu,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .width(48.dp)
-                                .height(68.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color.LightGray)
-                        )
+                        val posterUrl = staff.posterUrl?.takeIf { it.isNotBlank() }
+                        if (posterUrl != null) {
+                            AsyncImage(
+                                model = posterUrl,
+                                contentDescription = staff.nameRu,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .width(48.dp)
+                                    .height(68.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color.LightGray)
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .width(48.dp)
+                                    .height(68.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color.LightGray)
+                            )
+                        }
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(text = staff.nameRu ?: staff.nameEn ?: "", fontSize = 14.sp, style = SkillTheme.typography.graphiksRegular, maxLines = 1, overflow = TextOverflow.Ellipsis)

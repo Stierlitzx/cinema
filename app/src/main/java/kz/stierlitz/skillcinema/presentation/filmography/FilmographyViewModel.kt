@@ -97,6 +97,8 @@ class FilmographyViewModel(
             "PRODUCER" -> "Продюсер"
             "COMPOSER" -> "Композитор"
             "DESIGNER" -> "Художник"
+            "HRONO_TITR_MALE" -> "В титрах"
+            "DESIGN" -> "Художник"
             "EDITOR" -> "Монтажер"
             "OPERATOR" -> "Оператор"
             "HIMSELF" -> "Играет себя"

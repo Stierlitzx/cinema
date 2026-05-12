@@ -1,12 +1,14 @@
 package kz.stierlitz.skillcinema.presentation.search
 
 import kz.stierlitz.skillcinema.domain.model.Movie
+import kz.stierlitz.skillcinema.domain.model.Person
 
 interface SearchContract {
     data class State(
         val isLoading: Boolean = false,
         val query: String = "",
-        val results: List<Movie> = emptyList(),
+        val movieResults: List<Movie> = emptyList(),
+        val personResults: List<Person> = emptyList(),
         val error: String? = null
     )
 
@@ -18,4 +20,3 @@ interface SearchContract {
         data class ShowError(val message: String) : Effect()
     }
 }
-

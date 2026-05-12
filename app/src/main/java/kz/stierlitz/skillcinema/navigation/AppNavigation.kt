@@ -8,6 +8,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
@@ -42,6 +45,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
@@ -97,6 +102,17 @@ fun AppNavigation() {
         context = context,
         oneTapClient = Identity.getSignInClient(context)
     )
+
+    val isUserAuthenticated = remember { mutableStateOf<Boolean?>(null) }
+
+    LaunchedEffect(Unit) {
+        val user = googleAuthUiClient.getSignedInUser()
+        isUserAuthenticated.value = user != null
+    }
+
+    if (isUserAuthenticated.value == null) {
+        return
+    }
 
     Scaffold(
         bottomBar = {
@@ -194,7 +210,7 @@ fun AppNavigation() {
         NavHost(
             modifier = Modifier.padding(paddingValues),
             navController = navController,
-            startDestination = Route.MainGraph //.AuthGraph
+            startDestination = if (isUserAuthenticated.value == true) Route.MainGraph else Route.AuthGraph
         ) {
             navigation<Route.AuthGraph>(startDestination = Screen.OnBoarding) {
                 composable<Screen.OnBoarding> {
@@ -348,6 +364,9 @@ fun AppNavigation() {
                         onNavigateToFilm = { filmId ->
                             navController.navigate(Screen.Film(filmId))
                         },
+                        onNavigateToActor = { actorId ->
+                            navController.navigate(actorRoute(actorId))
+                        },
                         onNavigateToFilter = {
                             navController.navigate(Screen.Filter)
                         }
@@ -436,6 +455,9 @@ fun AppNavigation() {
                         },
                         onNavigateToGallery = { filmId ->
                             navController.navigate(galleryRoute(filmId))
+                        },
+                        onNavigateToSimilars = { type, title ->
+                            navController.navigate(Screen.FilmList(type, title))
                         }
                     )
                 }

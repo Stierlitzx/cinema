@@ -40,7 +40,7 @@ class SearchViewModel : ViewModel() {
     private fun searchMovies(query: String) {
         searchJob?.cancel()
         if (query.isBlank()) {
-            _state.update { it.copy(results = emptyList(), isLoading = false, error = null) }
+            _state.update { it.copy(movieResults = emptyList(), personResults = emptyList(), isLoading = false, error = null) }
             return
         }
 
@@ -51,7 +51,9 @@ class SearchViewModel : ViewModel() {
                 val countryId  = resolveCountryId(FilterSharedState.selectedCountries.value)
                 val genreId    = resolveGenreId(FilterSharedState.selectedGenres.value)
                 val ratingRange = FilterSharedState.ratingRange.value
-                val results = repository.getFilmsByFilters(
+
+                // Поиск фильмов
+                val movieResults = repository.getFilmsByFilters(
                     countries = countryId,
                     genres    = genreId,
                     keyword   = query,
@@ -60,7 +62,15 @@ class SearchViewModel : ViewModel() {
                     yearFrom = FilterSharedState.yearFrom.value,
                     yearTo = FilterSharedState.yearTo.value
                 )
-                _state.update { it.copy(isLoading = false, results = results) }
+
+                // Поиск людей
+                val personResults = try {
+                    repository.searchPersonsByName(query)
+                } catch (e: Exception) {
+                    emptyList()
+                }
+
+                _state.update { it.copy(isLoading = false, movieResults = movieResults, personResults = personResults) }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = e.message) }
                 _effect.emit(SearchContract.Effect.ShowError(e.message ?: "Unknown error"))

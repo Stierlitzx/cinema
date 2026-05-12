@@ -175,23 +175,64 @@ fun FilterScreen(
                     Text("Рейтинг", fontSize = 14.sp)
                     Text(if (ratingRange == 1f..10f) "любой" else "${ratingRange.start.toInt()} - ${ratingRange.endInclusive.toInt()}", fontSize = 14.sp, color = GrayText)
                 }
-                
+
                 RangeSlider(
                     value = ratingRange,
-                    onValueChange = { ratingRange = it },
+                    onValueChange = { range ->
+                        ratingRange = range
+                    },
                     valueRange = 1f..10f,
-                    steps = 8,
+                    modifier = Modifier
+                        .fillMaxWidth(),
                     colors = SliderDefaults.colors(
-                        thumbColor = BlueAccent,
+                        thumbColor = Color.Transparent,
                         activeTrackColor = BlueAccent,
                         inactiveTrackColor = DividerColor,
-                        activeTickColor = Color.White,
-                        inactiveTickColor = Color.White
+                        activeTickColor = Color.Transparent,
+                        inactiveTickColor = Color.Transparent
                     ),
-                    modifier = Modifier.padding(top = 8.dp)
+                    track = { rangeSliderState ->
+                        SliderDefaults.Track(
+                            rangeSliderState = rangeSliderState,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(2.dp),
+                            colors = SliderDefaults.colors(
+                                activeTrackColor = BlueAccent,
+                                inactiveTrackColor = DividerColor,
+                                activeTickColor = Color.Transparent,
+                                inactiveTickColor = Color.Transparent
+                            ),
+                            thumbTrackGapSize = 0.dp,
+                            trackInsideCornerSize = 0.dp
+                        )
+                    },
+                    startThumb = {
+                        Box(
+                            modifier = Modifier
+                                .size(22.dp)
+                                .clip(CircleShape)
+                                .background(Color.White)
+                                .border(1.5.dp, Color(0xFF333333), CircleShape)
+                        )
+                    },
+                    endThumb = {
+                        Box(
+                            modifier = Modifier
+                                .size(22.dp)
+                                .clip(CircleShape)
+                                .background(Color.White)
+                                .border(1.5.dp, Color(0xFF333333), CircleShape)
+                        )
+                    }
                 )
-                
-                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text("1", fontSize = 12.sp, color = GrayText)
                     Text("10", fontSize = 12.sp, color = GrayText)
                 }
@@ -271,17 +312,19 @@ fun CountryFilterScreen(onBack: () -> Unit) {
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
-                    focusedContainerColor = DividerColor.copy(alpha = 0.5f),
-                    unfocusedContainerColor = DividerColor.copy(alpha = 0.5f)
+                    focusedContainerColor = DividerColor,
+                    unfocusedContainerColor = DividerColor
                 ),
                 singleLine = true
             )
+            Spacer(Modifier.height(32.dp))
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(filteredCountries) { country ->
                     val isSelected = if (country == "Любая страна") selectedCountries.isEmpty() else selectedCountries.contains(country)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .background(if (isSelected) Color(0xFFB5B5C9).copy(alpha = 0.3f) else Color.Transparent)
                             .clickable {
                                 if (country == "Любая страна") {
                                     selectedCountries = emptySet()
@@ -289,7 +332,7 @@ fun CountryFilterScreen(onBack: () -> Unit) {
                                     selectedCountries = if (isSelected) selectedCountries - country else selectedCountries + country
                                 }
                             }
-                            .padding(horizontal = 26.dp, vertical = 6.dp),
+                            .padding(horizontal = 26.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -297,16 +340,11 @@ fun CountryFilterScreen(onBack: () -> Unit) {
                             text = country,
                             fontSize = 16.sp
                         )
-                        Checkbox(
-                            checked = isSelected,
-                            onCheckedChange = null,
-                            colors = CheckboxDefaults.colors(checkedColor = BlueAccent)
-                        )
                     }
                     HorizontalDivider(color = DividerColor)
                 }
             }
-            
+
             Button(
                 onClick = onBack,
                 modifier = Modifier
@@ -361,17 +399,19 @@ fun GenreFilterScreen(onBack: () -> Unit) {
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
-                    focusedContainerColor = DividerColor.copy(alpha = 0.5f),
-                    unfocusedContainerColor = DividerColor.copy(alpha = 0.5f)
+                    focusedContainerColor = DividerColor,
+                    unfocusedContainerColor = DividerColor,
                 ),
                 singleLine = true
             )
+            Spacer(Modifier.height(32.dp))
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(filteredGenres) { genre ->
                     val isSelected = if (genre == "Любой жанр") selectedGenres.isEmpty() else selectedGenres.contains(genre)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .background(if (isSelected) Color(0xFFB5B5C9).copy(alpha = 0.3f) else Color.Transparent)
                             .clickable {
                                 if (genre == "Любой жанр") {
                                     selectedGenres = emptySet()
@@ -379,7 +419,7 @@ fun GenreFilterScreen(onBack: () -> Unit) {
                                     selectedGenres = if (isSelected) selectedGenres - genre else selectedGenres + genre
                                 }
                             }
-                            .padding(horizontal = 26.dp, vertical = 6.dp),
+                            .padding(horizontal = 26.dp, vertical = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -387,16 +427,11 @@ fun GenreFilterScreen(onBack: () -> Unit) {
                             text = genre,
                             fontSize = 16.sp
                         )
-                        Checkbox(
-                            checked = isSelected,
-                            onCheckedChange = null,
-                            colors = CheckboxDefaults.colors(checkedColor = BlueAccent)
-                        )
                     }
                     HorizontalDivider(color = DividerColor)
                 }
             }
-            
+
             Button(
                 onClick = onBack,
                 modifier = Modifier
@@ -443,11 +478,10 @@ fun YearPickerControl(
                     )
                     Row {
                         IconButton(onClick = { baseYear -= 12 }, modifier = Modifier.size(32.dp)) {
-                            // You can replace the text with painterResource if you have icons
-                            Text("<", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Icon(painter = painterResource(id = R.drawable.ic_arrow_right), contentDescription = null)
                         }
                         IconButton(onClick = { baseYear += 12 }, modifier = Modifier.size(32.dp)) {
-                            Text(">", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Icon(painter = painterResource(id = R.drawable.ic_arrow_left), contentDescription = null)
                         }
                     }
                 }

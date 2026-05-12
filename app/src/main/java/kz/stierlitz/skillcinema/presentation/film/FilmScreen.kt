@@ -31,10 +31,11 @@ import coil.compose.AsyncImage
 import kz.stierlitz.skillcinema.R
 import kz.stierlitz.skillcinema.presentation.film.components.StaffListRow
 import kz.stierlitz.skillcinema.presentation.filmography.FilmographyItem
-import kz.stierlitz.skillcinema.ui.theme.SkillTheme
+import kz.stierlitz.skillcinema.presentation.home.components.MovieListRow
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import kz.stierlitz.skillcinema.ui.theme.SkillTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +45,9 @@ fun FilmScreen(
     onBack: () -> Unit = {},
     onNavigateToSeasons: (Int, String) -> Unit = { _, _ -> },
     onNavigateToActor: (Int) -> Unit = {},
-    onNavigateToGallery: (Int) -> Unit = {}
+    onNavigateToGallery: (Int) -> Unit = {},
+    onNavigateToSimilars: (String, String) -> Unit = { _, _ -> },
+    onNavigateToFilm: (Int) -> Unit = {}
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -233,7 +236,7 @@ fun FilmScreen(
                             color = Color(0xFF272727),
                             modifier = Modifier.weight(1f)
                         )
-
+                        
                         Text(
                             text = count.toString(),
                             fontSize = 16.sp,
@@ -243,7 +246,6 @@ fun FilmScreen(
                     HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 1.dp, modifier = Modifier.padding(start = 64.dp))
                 }
 
-                // Add custom collection row with icon
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -270,12 +272,24 @@ fun FilmScreen(
                 .fillMaxWidth()
                 .aspectRatio(3f / 4f)
         ) {
-            AsyncImage(
-                model = film.coverUrl ?: film.posterUrl,
-                contentDescription = film.nameRu,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
+            val coverModel = film.coverUrl?.takeIf { it.isNotBlank() }
+                ?: film.posterUrl.takeIf { it.isNotBlank() }
+                ?: film.posterUrlPreview.takeIf { it.isNotBlank() }
+
+            if (coverModel != null) {
+                AsyncImage(
+                    model = coverModel,
+                    contentDescription = film.nameRu,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFFEAEAF2))
+                )
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -307,9 +321,10 @@ fun FilmScreen(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (!film.logoUrl.isNullOrEmpty()) {
+                val logoModel = film.logoUrl?.takeIf { it.isNotBlank() }
+                if (logoModel != null) {
                     AsyncImage(
-                        model = film.logoUrl,
+                        model = logoModel,
                         contentDescription = "Logo",
                         modifier = Modifier.height(60.dp),
                         contentScale = ContentScale.Fit
@@ -467,7 +482,21 @@ fun FilmScreen(
                 Text(text = "не были добавлены", fontSize = 14.sp, color = Color.Gray)
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
+
+        if (state.similars.isNotEmpty()) {
+            MovieListRow(
+                title = "Похожие фильмы",
+                listType = "similars_$filmId",
+                movies = state.similars,
+                onMovieClick = onNavigateToFilm,
+                onSeeAllClick = onNavigateToSimilars,
+                seeAllText = "${state.similars.size} >"
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
     }
 }

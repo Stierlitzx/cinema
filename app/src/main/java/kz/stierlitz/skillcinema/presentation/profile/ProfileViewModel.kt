@@ -51,16 +51,16 @@ class ProfileViewModel(
                 collectionDao.insertCollection(kz.stierlitz.skillcinema.data.local.entity.CollectionEntity(name = "Хочу посмотреть", isCustom = false))
             }
         }
-
+        
         viewModelScope.launch {
             collectionDao.getAllCollections().collectLatest { collections ->
                 _state.update { it.copy(collections = collections) }
-
+                
                 // Create flows for each collection's count
                 val countFlows = collections.associate { collection ->
                     collection.id to SkillCinemaApp.instance.database.collectionMovieDao.getMovieCountInCollection(collection.id)
                 }
-
+                
                 // Combine all count flows
                 if (countFlows.isNotEmpty()) {
                     val flows = countFlows.values.toList()

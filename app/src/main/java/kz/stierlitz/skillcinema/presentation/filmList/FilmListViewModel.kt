@@ -99,7 +99,18 @@ class FilmListViewModel : ViewModel() {
                     "DRAMA_FRANCE" -> {
                         repository.getFilmsByFilters(countries = 3, genres = 8)
                     }
-                    else -> emptyList()
+                    else -> {
+                        if (type.startsWith("similars_")) {
+                            val filmId = type.substring("similars_".length).toIntOrNull()
+                            if (filmId != null) {
+                                repository.getSimilarFilms(filmId)
+                            } else {
+                                emptyList()
+                            }
+                        } else {
+                            emptyList()
+                        }
+                    }
                 }
 
                 _state.update { it.copy(isLoading = false, movies = movies) }

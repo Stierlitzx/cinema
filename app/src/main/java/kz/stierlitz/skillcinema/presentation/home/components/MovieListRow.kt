@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,14 +27,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kz.stierlitz.skillcinema.R
 import kz.stierlitz.skillcinema.domain.model.Movie
+import kz.stierlitz.skillcinema.presentation.profile.ProfileContract
 import kz.stierlitz.skillcinema.ui.theme.SkillTheme
 
 @Composable
-fun MovieListRow(title: String, listType: String, movies: List<Movie>, onMovieClick: (Int) -> Unit, onSeeAllClick: (String, String) -> Unit = { _, _ -> }) {
+fun MovieListRow(title: String, listType: String, movies: List<Movie>, onMovieClick: (Int) -> Unit, onSeeAllClick: (String, String) -> Unit = { _, _ -> }, seeAllText: String? = null) {
     if (movies.isNotEmpty()) {
         Column {
             Row() {
@@ -50,7 +54,7 @@ fun MovieListRow(title: String, listType: String, movies: List<Movie>, onMovieCl
                         .clickable {
                             onSeeAllClick(listType, title)
                         },
-                    text = "Все",
+                    text = seeAllText ?: "Все",
                     style = SkillTheme.typography.graphiksMedium,
                     fontSize = 14.sp,
                     color = Color(0xFF3D3BFF)
@@ -67,36 +71,43 @@ fun MovieListRow(title: String, listType: String, movies: List<Movie>, onMovieCl
                 }
                 item {
                     Column(
-                        modifier = Modifier
-                            .height(200.dp)
-                            .padding(end = 16.dp)
-                            .clickable {
-                                onSeeAllClick(listType, title)
-                            },
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
+                        modifier = Modifier.width(140.dp)) {
                         Box(
                             modifier = Modifier
-                                .size(32.dp)
+                                .fillMaxWidth()
+                                .aspectRatio(2f / 3f)
                                 .clip(CircleShape)
-                                .background(Color.White),
+                                .clickable { onSeeAllClick(listType, title) },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_arrow_forward), // We'll add this drawable
-                                contentDescription = "Show All",
-                                tint = Color(0xFF3D3BFF),
-                                modifier = Modifier.size(16.dp)
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFF0F0F0)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_arrow_forward),
+                                        contentDescription = "Show All",
+                                        tint = Color(0xFF3D3BFF),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "Показать все",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF272727),
+                                    style = SkillTheme.typography.graphiksRegular
+                                )
+                            }
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Показать все",
-                            fontSize = 12.sp,
-                            color = Color(0xFF272727),
-                            style = SkillTheme.typography.graphiksRegular
-                        )
+                        Spacer(modifier = Modifier.height(36.dp))
                     }
                 }
             }
